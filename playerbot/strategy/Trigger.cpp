@@ -1,0 +1,47 @@
+#include "../../botpch.h"
+#include "../playerbot.h"
+#include "Trigger.h"
+#include "Action.h"
+#include "Unit.h"
+#include "Value.h"
+
+using namespace ai;
+
+Event Trigger::Check()
+{
+	if (triggered)
+		return Event(getName(), param, owner);
+
+	if (IsActive())
+	{
+		Event event(getName());
+		return event;
+	}
+	Event event;
+	return event;
+}
+
+Value<Unit*>* Trigger::GetTargetValue()
+{
+    return context->GetValue<Unit*>(GetTargetName());
+}
+
+Unit* Trigger::GetTarget()
+{
+    return GetTargetValue()->Get();
+}
+
+TriggerNode::~TriggerNode()
+{
+	NextAction::destroy(handlers);
+}
+
+NextAction** TriggerNode::getHandlers()
+{
+	return NextAction::merge(NextAction::clone(handlers), trigger->getHandlers());
+}
+
+float TriggerNode::getFirstRelevance()
+{
+	return handlers[0] ? handlers[0]->getRelevance() : -1;
+}
